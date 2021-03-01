@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Character, Planet, Favorites
 #from models import Person
 
 app = Flask(__name__)
@@ -30,14 +30,70 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
+    result = list(map(lambda x: x.serialize_user(), users))
 
-    return jsonify(response_body), 200
+    return jsonify(result), 200
+
+#Get a single user by id
+@app.route('/user/<int:id>', methods=['GET'])
+def get_user(id):
+    user = User.query.get(id)
+
+    if user is None:
+        raise APIException('The user is not registered', status_code=404)
+
+    result = user.serialize_user()
+
+    return jsonify(result), 200
+
+@app.route('/planets', methods=['GET'])
+def get_planets():
+
+    planets = Planet.query.all()
+
+    result = list(map(lambda x : x.serialize_planet(), planets))
+
+    return jsonify(result), 200
+
+#Get a single planet by id
+@app.route('/planet/<int:planet_id>', methods=['GET'])
+def get_planet(planet_id):
+    
+    planet =  Planet.query.get(planet_id)
+    if planet is None:
+        raise APIException('The planet is not registered', status_code=404)
+    result = planet.serialize_planet()
+
+    return jsonify(result), 200
+
+@app.route('/peoples', methods=['GET'])
+def get_peoples():
+
+    peoples = Character.query.all()
+
+    result = list(map(lambda x : x.serialize_character(), peoples))
+
+    return jsonify(result), 200
+
+#Get a single planet by id
+@app.route('/people/<int:people_id>', methods=['GET'])
+def get_people(people_id):
+    
+    people =  Character.query.get(people_id)
+
+    if people is None:
+        raise APIException('The planet is not registered', status_code=404)
+    result = people.serialize_character()
+
+    return jsonify(result), 200
+
+
+
+    
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

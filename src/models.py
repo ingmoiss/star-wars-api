@@ -5,10 +5,10 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key = True)
-    nickname = db.Column(db.String(20), nullable=False)
-    password = db.Column(db.String(20), unique=False, nullable=False)
-    email = db.Column(db.String(20), unique = True, nullable=False)
-    first_name = db.Column(db.String(20), unique=False, nullable=False)
+    nickname = db.Column(db.String(300), nullable=False)
+    password = db.Column(db.String(300), unique=False, nullable=False)
+    email = db.Column(db.String(300), unique = True, nullable=False)
+    first_name = db.Column(db.String(300), unique=False, nullable=False)
     last_name = db.Column(db.String(40), unique=False, nullable=False)
     favorites = db.relationship('Favorites', lazy=True)
 
@@ -29,16 +29,16 @@ class User(db.Model):
 class Character(db.Model):
     __tablename__ = 'character'
     character_id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(20), unique=True, nullable=False)
-    birth = db.Column(db.String(20), unique=True, nullable=False)
+    name = db.Column(db.String(300), unique=True, nullable=False)
+    birth = db.Column(db.String(300), nullable=False)
     gender = db.Column(db.String(10), nullable=False)
     height = db.Column(db.Integer, nullable=False) 
-    skin_color = db.Column(db.String(20), nullable=False)
-    eye_color = db.Column(db.String(20), nullable=False)
-    hair_color = db.Column(db.String(20), nullable=False)
+    skin_color = db.Column(db.String(300), nullable=False)
+    eye_color = db.Column(db.String(300), nullable=False)
+    hair_color = db.Column(db.String(300), nullable=False)
     mass = db.Column(db.Integer, nullable=False) 
-    edited = db.Column(db.String(20), nullable=False)
-    created = db.Column(db.String(20), nullable=False)
+    edited = db.Column(db.String(300), nullable=False)
+    created = db.Column(db.String(300), nullable=False)
     url = db.Column(db.String(300), unique=True, nullable=False)
     description = db.Column(db.String (2000), nullable=False)
 
@@ -67,17 +67,17 @@ class Character(db.Model):
 class Planet(db.Model):
     __tablename__ = 'planet'
     planet_id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(20), unique=True, nullable=False)
-    climate = db.Column(db.String(20), nullable=False)
+    name = db.Column(db.String(250), unique=True, nullable=False)
+    climate = db.Column(db.String(250), nullable=False)
     population = db.Column(db.Integer, nullable=False)
     orbital_period = db.Column(db.Integer, nullable=False)
     rotation_period = db.Column(db.Integer, nullable=False)
     diameter = db.Column(db.Integer, nullable=False)
-    gravity = db.Column(db.String(20), nullable=False)
-    terrain = db.Column(db.String(20), nullable=False)
+    gravity = db.Column(db.String(300), nullable=False)
+    terrain = db.Column(db.String(300), nullable=False)
     surface_water = db.Column(db.Integer, nullable=False)
-    created = db.Column(db.String(20), nullable=False)
-    edited = db.Column(db.String(20), nullable=False)
+    created = db.Column(db.String(300), nullable=False)
+    edited = db.Column(db.String(300), nullable=False)
     url = db.Column(db.String(300), unique=True, nullable=False)
     description = db.Column(db.String (2000), nullable=False)
 
@@ -85,7 +85,7 @@ class Planet(db.Model):
         return '<Planet %r>' % self.planet_id
     
     #The information is serialized
-    def serialize_character(self):
+    def serialize_planet(self):
         return {
             "planet_id": self.planet_id,
             "name" : self.name,
@@ -106,7 +106,7 @@ class Planet(db.Model):
 class Favorites(db.Model):
     __tablename__ = 'favorites'
     id = db.Column(db.Integer, primary_key = True)
-    favorite = db.Column(db.String(20), unique=True, nullable=False)
+    favorite = db.Column(db.String(300), unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     
     def __repr__(self):
