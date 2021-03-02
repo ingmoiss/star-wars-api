@@ -91,6 +91,38 @@ def get_people(people_id):
 
     return jsonify(result), 200
 
+@app.route('/users/<int:user_id>/favorites', methods=['GET'])
+def get_favorites(user_id):
+    all_favs = Favorites.query.all()
+    lista_favs = list(map(lambda x: x.serialize_favorite(), all_favs))
+    user_favs = list(filter( lambda x: x["user_id"] == user_id , lista_favs))
+    favoritos = list(map( lambda x: {"fav_id" : x["id"], "fav_name" : x["fav_name"]}, user_favs))
+    result={
+        "user_id" : user_id,
+        "favoritos" : favoritos,
+    }
+    return jsonify(result), 200
+
+@app.route('/users/<int:user_id>/favorites', methods=['POST'])
+def add_favorite(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        raise APIException('This user is not in the database', status_code=404)
+
+    all_peoples = Character.query.all()
+    people = list(map(lambda x: x.serialize_character(), all_peoples))
+
+    all_planets = Planet.query.all()
+    planets = list(map(lambda x: x.serialize_planet(), all_planets))
+
+    # recibir info del request
+    request_body = request.get_json()
+    fav = Favorites.verification("algo", request_body["fav_name"], planets, people)
+    favorito = Favorites(user_id = user_id, favorite = fav)
+    db.session.add(favorito)
+    db.session.commit()
+
+    return jsonify("Favorite added"), 200
 
 
     

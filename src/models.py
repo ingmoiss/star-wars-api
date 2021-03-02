@@ -5,7 +5,7 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key = True)
-    nickname = db.Column(db.String(300), nullable=False)
+    nickname = db.Column(db.String(300), unique = True, nullable=False)
     password = db.Column(db.String(300), unique=False, nullable=False)
     email = db.Column(db.String(300), unique = True, nullable=False)
     first_name = db.Column(db.String(300), unique=False, nullable=False)
@@ -118,3 +118,8 @@ class Favorites(db.Model):
             "favorite" : self.favorite,
             "user_id" : self.user_id
         }
+
+    def verification(self , fav_request, all_planet, all_people):
+        planets = list(filter(lambda x : x["name"]==fav_request, all_planet))
+        peoples = list(filter(lambda x : x["name"]==fav_request, all_people))
+        return fav_request if  len(planets) > 0 or len(peoples) > 0 else None
