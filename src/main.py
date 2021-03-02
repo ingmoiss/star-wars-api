@@ -96,10 +96,10 @@ def get_favorites(user_id):
     all_favs = Favorites.query.all()
     lista_favs = list(map(lambda x: x.serialize_favorite(), all_favs))
     user_favs = list(filter( lambda x: x["user_id"] == user_id , lista_favs))
-    favoritos = list(map( lambda x: {"fav_id" : x["id"], "fav_name" : x["fav_name"]}, user_favs))
+    favorites = list(map( lambda x: {"fav_id" : x["fav_id"], "favorite" : x["favorite"]}, user_favs))
     result={
         "user_id" : user_id,
-        "favoritos" : favoritos,
+        "favorites" : favorites,
     }
     return jsonify(result), 200
 
@@ -124,8 +124,17 @@ def add_favorite(user_id):
 
     return jsonify("Favorite added"), 200
 
-
+@app.route('/favorites/<int:fav_id>', methods=['DELETE'])
+def del_favorite(fav_id):
     
+    fav = Favorites.query.get(fav_id)
+    if fav is None:
+        raise APIException('Favorite not found', status_code=404)
+
+    db.session.delete(fav)
+    db.session.commit()
+
+    return jsonify({"msg": "Favorite deleted" }), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

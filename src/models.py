@@ -105,8 +105,8 @@ class Planet(db.Model):
 
 class Favorites(db.Model):
     __tablename__ = 'favorites'
-    id = db.Column(db.Integer, primary_key = True)
-    favorite = db.Column(db.String(300), unique=True, nullable=False)
+    fav_id = db.Column(db.Integer, primary_key = True)
+    favorite = db.Column(db.String(300), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     
     def __repr__(self):
