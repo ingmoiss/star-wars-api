@@ -12,6 +12,8 @@ from admin import setup_admin
 from models import db, User, Character, Planet, Favorites
 #from models import Person
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
@@ -136,6 +138,48 @@ def del_favorite(fav_id):
     db.session.commit()
 
     return jsonify({"msg": "Favorite deleted" }), 200
+
+#Register User
+@app.route('/sign_up/', methods=['POST'])
+def add_user():
+    if request.method == 'POST':
+        email = request.json.get("email", None)
+        password = request.json.get("password", None)
+        user_name = request.json.get("user_name", None)
+        first_name = request.json.get("first_name", None)
+        last_name = request.json.get("last_name", None)
+
+        if not email:
+            return jsonify("Email is required!"), 400
+        if not password:
+            return jsonify("Password is required!"), 400
+        if not user_name:
+            return jsonify("Username is required!"), 400
+        if not first_name:
+            return jsonify("First name is required!"), 400
+        if not last_name:
+            return jsonify("Last name is required!"), 400
+
+        #Verification email
+        mail = User.query.filter_by(email = email).first()
+        if mail:
+            return jsonify({"msg": "Email  already exists"}), 400
+        
+        #Verification user_name
+        username = User.query.filter_by(nickname = user_name).first()
+        if username: 
+            return jsonify({"msg": "Username  already exists"}), 400
+        
+        #Encrypt password
+        hashed_password = generate_password_hash(password)
+
+        user = User(nickname = user_name, email = email, first_name = first_name, last_name = last_name, password = hashed_password)
+
+        db.session.add(user)
+        db.session.commit()
+        
+        return jsonify("Your register was successful!"), 200
+   
 
 #Functions to fill the database
 @app.route('/planets', methods=['POST'])
