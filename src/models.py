@@ -40,7 +40,6 @@ class Character(db.Model):
     edited = db.Column(db.String(300), nullable=False)
     created = db.Column(db.String(300), nullable=False)
     url = db.Column(db.String(300), unique=True, nullable=False)
-    description = db.Column(db.String (2000), nullable=False)
 
     def __repr__(self):
         return '<Character %r>' % self.user_id
@@ -60,7 +59,6 @@ class Character(db.Model):
             "edited": self.edited,
             "created": self.created,
             "url" : self.url,
-            "description" : self.description,
         }
 
 
@@ -69,17 +67,16 @@ class Planet(db.Model):
     planet_id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(250), unique=True, nullable=False)
     climate = db.Column(db.String(250), nullable=False)
-    population = db.Column(db.Integer, nullable=False)
-    orbital_period = db.Column(db.Integer, nullable=False)
-    rotation_period = db.Column(db.Integer, nullable=False)
-    diameter = db.Column(db.Integer, nullable=False)
+    population = db.Column(db.String(300), nullable=False)
+    orbital_period = db.Column(db.String(300), nullable=False)
+    rotation_period = db.Column(db.String(300), nullable=False)
+    diameter = db.Column(db.String(300), nullable=False)
     gravity = db.Column(db.String(300), nullable=False)
     terrain = db.Column(db.String(300), nullable=False)
-    surface_water = db.Column(db.Integer, nullable=False)
+    surface_water = db.Column(db.String(300), nullable=False)
     created = db.Column(db.String(300), nullable=False)
     edited = db.Column(db.String(300), nullable=False)
     url = db.Column(db.String(300), unique=True, nullable=False)
-    description = db.Column(db.String (2000), nullable=False)
 
     def __repr__(self):
         return '<Planet %r>' % self.planet_id
@@ -100,7 +97,6 @@ class Planet(db.Model):
             "edited": self.edited,
             "created": self.created,
             "url" : self.url,
-            "description" : self.description,
         }
 
 class Favorites(db.Model):

@@ -2,6 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
+import requests
 from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
 from flask_swagger import swagger
@@ -135,6 +136,36 @@ def del_favorite(fav_id):
     db.session.commit()
 
     return jsonify({"msg": "Favorite deleted" }), 200
+
+#Functions to fill the database
+@app.route('/planets', methods=['POST'])
+def add_planets():
+    all_planets=[]
+    for i in range(1,11):
+        planets = requests.get(f"https://www.swapi.tech/api/planets/{i}").json()["result"]["properties"]
+        all_planets.append(planets)
+    
+    for request_body in all_planets:
+        planet = Planet(name=request_body["name"], climate = request_body["climate"], population = request_body["population"], orbital_period = request_body["orbital_period"], rotation_period = request_body["rotation_period"], diameter=request_body["diameter"], gravity=request_body["gravity"], terrain=request_body["terrain"], surface_water=request_body["surface_water"], edited=request_body["edited"], created=request_body["created"], url=request_body["url"])
+        db.session.add(planet)
+        db.session.commit()
+
+    return jsonify({"msg" : "Planets added"}), 200
+
+#Functions to fill the database
+@app.route('/peoples', methods=['POST'])
+def add_peoples():
+    all_peoples=[]
+    for i in range(1,11):
+        peoples = requests.get(f"https://www.swapi.tech/api/people/{i}").json()["result"]["properties"]
+        all_peoples.append(peoples)
+    
+    for request_body in all_peoples:
+        people = Character(name=request_body["name"], birth=request_body["birth_year"], gender=request_body["gender"], height=request_body["height"], skin_color=request_body["skin_color"], eye_color=request_body["eye_color"],  hair_color=request_body["hair_color"], mass=request_body["mass"], edited=request_body["edited"], created=request_body["created"], url=request_body["url"])
+        db.session.add(people)
+        db.session.commit()
+
+    return jsonify({"msg" : "Peoples added"}), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

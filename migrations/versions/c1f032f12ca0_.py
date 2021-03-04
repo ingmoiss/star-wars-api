@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: f0840ba1782e
+Revision ID: c1f032f12ca0
 Revises: 
-Create Date: 2021-03-02 17:15:31.566312
+Create Date: 2021-03-03 23:26:01.501230
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f0840ba1782e'
+revision = 'c1f032f12ca0'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,7 +31,6 @@ def upgrade():
     sa.Column('edited', sa.String(length=300), nullable=False),
     sa.Column('created', sa.String(length=300), nullable=False),
     sa.Column('url', sa.String(length=300), nullable=False),
-    sa.Column('description', sa.String(length=2000), nullable=False),
     sa.PrimaryKeyConstraint('character_id'),
     sa.UniqueConstraint('name'),
     sa.UniqueConstraint('url')
@@ -40,17 +39,16 @@ def upgrade():
     sa.Column('planet_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=250), nullable=False),
     sa.Column('climate', sa.String(length=250), nullable=False),
-    sa.Column('population', sa.Integer(), nullable=False),
-    sa.Column('orbital_period', sa.Integer(), nullable=False),
-    sa.Column('rotation_period', sa.Integer(), nullable=False),
-    sa.Column('diameter', sa.Integer(), nullable=False),
+    sa.Column('population', sa.String(length=300), nullable=False),
+    sa.Column('orbital_period', sa.String(length=300), nullable=False),
+    sa.Column('rotation_period', sa.String(length=300), nullable=False),
+    sa.Column('diameter', sa.String(length=300), nullable=False),
     sa.Column('gravity', sa.String(length=300), nullable=False),
     sa.Column('terrain', sa.String(length=300), nullable=False),
-    sa.Column('surface_water', sa.Integer(), nullable=False),
+    sa.Column('surface_water', sa.String(length=300), nullable=False),
     sa.Column('created', sa.String(length=300), nullable=False),
     sa.Column('edited', sa.String(length=300), nullable=False),
     sa.Column('url', sa.String(length=300), nullable=False),
-    sa.Column('description', sa.String(length=2000), nullable=False),
     sa.PrimaryKeyConstraint('planet_id'),
     sa.UniqueConstraint('name'),
     sa.UniqueConstraint('url')
@@ -71,8 +69,7 @@ def upgrade():
     sa.Column('favorite', sa.String(length=300), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('fav_id'),
-    sa.UniqueConstraint('favorite')
+    sa.PrimaryKeyConstraint('fav_id')
     )
     # ### end Alembic commands ###
 
