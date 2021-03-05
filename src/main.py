@@ -10,9 +10,10 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Character, Planet, Favorites
-#from models import Person
+import datetime
 
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -22,6 +23,7 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 setup_admin(app)
+jwt = JWTManager(app) #Important
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -94,23 +96,46 @@ def get_people(people_id):
 
     return jsonify(result), 200
 
-@app.route('/users/<int:user_id>/favorites', methods=['GET'])
-def get_favorites(user_id):
+# @app.route('/users/<int:user_id>/favorites', methods=['GET'])
+# def get_favorites(user_id):
+#     all_favs = Favorites.query.all()
+#     lista_favs = list(map(lambda x: x.serialize_favorite(), all_favs))
+#     user_favs = list(filter( lambda x: x["user_id"] == user_id , lista_favs))
+#     favorites = list(map( lambda x: {"fav_id" : x["fav_id"], "favorite" : x["favorite"]}, user_favs))
+#     result={
+#         "user_id" : user_id,
+#         "favorites" : favorites,
+#     }
+#     return jsonify(result), 200
+
+@app.route('/favorites', methods=['GET', 'DELETE'])
+@jwt_required()
+def get_favorites():
+    user_name = get_jwt_identity()
+    user = User.query.filter_by(nickname=user_name).first()
+    if user is None:
+        raise APIException('This user is not in the database', status_code=404)
+    user_id = user.id
+
     all_favs = Favorites.query.all()
     lista_favs = list(map(lambda x: x.serialize_favorite(), all_favs))
     user_favs = list(filter( lambda x: x["user_id"] == user_id , lista_favs))
-    favorites = list(map( lambda x: {"fav_id" : x["fav_id"], "favorite" : x["favorite"]}, user_favs))
-    result={
-        "user_id" : user_id,
-        "favorites" : favorites,
-    }
+    favorites = list(map( lambda x: x["favorite"], user_favs))
+    result = favorites
+
     return jsonify(result), 200
 
-@app.route('/users/<int:user_id>/favorites', methods=['POST'])
-def add_favorite(user_id):
-    user = User.query.get(user_id)
+
+@app.route('/favorites/<fav_name>', methods=['POST'])
+@jwt_required()
+def add_favorite(fav_name):
+
+    user_name = get_jwt_identity()
+    user = User.query.filter_by(nickname=user_name).first() #Seleciona el pimer elemento que cumpla con la fultacion
+
     if user is None:
         raise APIException('This user is not in the database', status_code=404)
+    user_id = user.id
 
     all_peoples = Character.query.all()
     people = list(map(lambda x: x.serialize_character(), all_peoples))
@@ -118,26 +143,66 @@ def add_favorite(user_id):
     all_planets = Planet.query.all()
     planets = list(map(lambda x: x.serialize_planet(), all_planets))
 
+    all_favs = Favorites.query.all()
+    lista_favs = list(map(lambda x: x.serialize_favorite(), all_favs))
+    user_favs = list(filter( lambda x: x["user_id"] == user_id , lista_favs))
+    favorites = list(map( lambda x: x["favorite"], user_favs))
+
     # recibir info del request
     request_body = request.get_json()
-    fav = Favorites.verification("algo", request_body["fav_name"], planets, people)
+    fav = Favorites.verification("ld", fav_name, planets, people)
+    if fav is None:
+        raise APIException('This planet or character doesnt exist or has already been added', status_code=404)
     favorito = Favorites(user_id = user_id, favorite = fav)
     db.session.add(favorito)
     db.session.commit()
 
-    return jsonify("Favorite added"), 200
+    all_favs = Favorites.query.all()
+    lista_favs = list(map(lambda x: x.serialize_favorite(), all_favs))
+    user_favs = list(filter( lambda x: x["user_id"] == user_id , lista_favs))
+    favorites = list(map( lambda x: x["favorite"], user_favs))
+    result = favorites
 
-@app.route('/favorites/<int:fav_id>', methods=['DELETE'])
-def del_favorite(fav_id):
-    
-    fav = Favorites.query.get(fav_id)
+
+    return jsonify(result), 200
+
+@app.route('/favorites/<fav_name>', methods=['DELETE'])
+@jwt_required()
+def del_fav(fav_name): 
+    user_name = get_jwt_identity()
+    user = User.query.filter_by(nickname=user_name).first() #Seleciona el pimer elemento que cumpla con la fultacion
+
+    if user is None:
+        raise APIException('This user is not in the database', status_code=404)
+    user_id = user.id
+
+    fav = Favorites.query.filter_by(favorite=fav_name, user_id=user_id).first()
     if fav is None:
         raise APIException('Favorite not found', status_code=404)
 
     db.session.delete(fav)
-    db.session.commit()
+    db.session.commit()   
 
-    return jsonify({"msg": "Favorite deleted" }), 200
+    all_favs = Favorites.query.all()
+    lista_favs = list(map(lambda x: x.serialize_favorite(), all_favs))
+    user_favs = list(filter( lambda x: x["user_id"] == user_id , lista_favs))
+    favorites = list(map( lambda x: x["favorite"], user_favs))
+    result = favorites
+
+
+    return jsonify(result), 200
+
+# @app.route('/favorites/<int:fav_id>', methods=['DELETE'])
+# def del_favorite(fav_id):
+    
+#     fav = Favorites.query.get(fav_id)
+#     if fav is None:
+#         raise APIException('Favorite not found', status_code=404)
+
+#     db.session.delete(fav)
+#     db.session.commit()
+
+#     return jsonify({"msg": "Favorite deleted" }), 200
 
 #Register User
 @app.route('/sign_up/', methods=['POST'])
@@ -179,6 +244,38 @@ def add_user():
         db.session.commit()
         
         return jsonify("Your register was successful!"), 200
+
+@app.route('/log_in/', methods=['POST'])
+def login():
+    if request.method == 'POST':
+        user_name= request.json.get("user_name", None)
+        password = request.json.get("password", None)
+
+        if not user_name:
+            return jsonify("Username is required"), 400
+        if not password:
+            return jsonify("Password is required"), 400
+
+        user = User.query.filter_by(nickname=user_name).first()
+        if not user:
+            return jsonify("Username/Password are incorrect"), 401
+           
+
+        if not check_password_hash(user.password, password):
+            return jsonify("Username/Password are incorrect"), 401
+
+        # Create token
+        expiracion = datetime.timedelta(days=1)
+        access_token = create_access_token(identity=user.nickname, expires_delta=expiracion)
+
+        data = {
+            
+            "token": access_token,
+            "expires": expiracion.total_seconds()*1000,
+            
+        }
+
+        return jsonify(data), 200
    
 
 #Functions to fill the database
